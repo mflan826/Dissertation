@@ -217,14 +217,50 @@ pre code {
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGxvdChjYXJzKVxuYGBgIn0= -->
-<pre class="r"><code>plot(cars)</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0FsbGVudG93blxuXG4jd2hvbGUgc2hlZXQgY2xlYW5cbiNSZW5hbWUgcm9sZSwgYWdlLCBnZW5kZXIsIHNjaG9vbCwgcmFjZVxuZDEgPC0gZDEgJT4lIHJlbmFtZShSb2xlID0gUTEpICU+JSBcbiAgcmVuYW1lKEFnZSA9IFEyKSAlPiUgcmVuYW1lKEdlbmRlciA9IFEzKSAlPiUgXG4gIHJlbmFtZShTY2hvb2wgPSBRNSkgJT4lIHJlbmFtZShSYWNlX0V0aCA9IFE0KVxuXG4jcmVtb3ZlIGZpcnN0IHJvdyBhY3RpbmcgYXMgcXVlc3Rpb24gbmFtZSB3aGljaCB3YXMgYWRkZWQgYnkgUXVhbHRyaWNzIG91dC1kYXRlZCBleHBvcnQgZnVuY3Rpb25hbGl0eS5cbmQxIDwtIGQxWy1jKDEpLF1cbiAgXG5cbiNDbGVhbiBieSByb2xlIC0gWW91dGhcbmQxWSA8LSBkMSAlPiUgZmlsdGVyKFJvbGUgPT1cIkknbSBhIFlvdW5nIFBlcnNvblwiKSAlPiUgXG4gIGZpbHRlcihGaW5pc2hlZD09XCJUcnVlXCIpICU+JSBzZWxlY3QoLWMoNzc6Njk4KSkgJT4lXG4gIHNlbGVjdCgtYyg4NTo5NSkpICU+JSBzZWxlY3QoLWMoODE6ODQpKSAlPiUgXG4gIHNlbGVjdCgtYyg3NTo3NikpICU+JSBzZWxlY3QgKC1jKDE6MTApKSAlPiUgXG4gIG11dGF0ZShRNzczID0gc3RyX3JlcGxhY2UoUTc3MyxcIlNvbWVcXHJcXG5cIixcIlNvbWVcIikpICU+JSBcbiAgbXV0YXRlKFE3NzMgPSBzdHJfcmVwbGFjZShRNzczLFwiQSBsb3RcXHJcXG5cIixcIkEgbG90XCIpKSAlPiVcbiAgbXV0YXRlKFE3NzMgPSBzdHJfcmVwbGFjZShRNzczLFwiTm90IGF0IGFsXFxyXFxuXCIsXCJOb3QgYXQgYWxsXCIpKSAlPiVcbiAgc2VsZWN0KC1jKDY6MTApKSAlPiUgXG4gIG11dGF0ZV9hdCh2YXJzKDY6NTkpLFxuICAgICAgICAgICAgfmFzLm51bWVyaWMocmVjb2RlKC4sXG4gICAgICAgICAgICAgIFwiQSBsb3RcIj0zLFxuICAgICAgICAgICAgICBcIlNvbWVcIj0yLFxuICAgICAgICAgICAgICBcIk5vdCBhdCBhbGxcIj0xLFxuICAgICAgICAgICAgKSkpICU+JSBcbiNSRU5BTUUgU1FJc1xuY29sbmFtZXMoZDFZKVs2OjU5XSA8LSBjKHBhc3RlMChcIlNRSVwiLDE6NTQpKVxuICBcbiAgXG5cbmQxRiA8LSBkMSAlPiUgZmlsdGVyKFExID09XCJJJ20gYSBQYXJlbnQgLyBMZWdhbCBHdWFyZGlhblwiKVxuZDFTIDwtIGQxICU+JSBmaWx0ZXIoUTEgPT1cIkknbSBhIFRyYW5zaXRpb24gU3Rha2Vob2xkZXJcIilcblxuYGBgIn0= -->
+<pre class="r"><code>#Allentown
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIk1hdHRoZXcgRmxhbmFnYW4gLSBDaGFwdGVyIDQgLSBEaXNzZXJ0YXRpb24iDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQoNCmBgYHtyfQ0KcGxvdChjYXJzKQ0KYGBgDQoNCg==</div>
+#whole sheet clean
+#Rename role, age, gender, school, race
+d1 &lt;- d1 %&gt;% rename(Role = Q1) %&gt;% 
+  rename(Age = Q2) %&gt;% rename(Gender = Q3) %&gt;% 
+  rename(School = Q5) %&gt;% rename(Race_Eth = Q4)
+
+#remove first row acting as question name which was added by Qualtrics out-dated export functionality.
+d1 &lt;- d1[-c(1),]
+  
+
+#Clean by role - Youth
+d1Y &lt;- d1 %&gt;% filter(Role ==&quot;I&#39;m a Young Person&quot;) %&gt;% 
+  filter(Finished==&quot;True&quot;) %&gt;% select(-c(77:698)) %&gt;%
+  select(-c(85:95)) %&gt;% select(-c(81:84)) %&gt;% 
+  select(-c(75:76)) %&gt;% select (-c(1:10)) %&gt;% 
+  mutate(Q773 = str_replace(Q773,&quot;Some\r\n&quot;,&quot;Some&quot;)) %&gt;% 
+  mutate(Q773 = str_replace(Q773,&quot;A lot\r\n&quot;,&quot;A lot&quot;)) %&gt;%
+  mutate(Q773 = str_replace(Q773,&quot;Not at al\r\n&quot;,&quot;Not at all&quot;)) %&gt;%
+  select(-c(6:10)) %&gt;% 
+  mutate_at(vars(6:59),
+            ~as.numeric(recode(.,
+              &quot;A lot&quot;=3,
+              &quot;Some&quot;=2,
+              &quot;Not at all&quot;=1,
+            ))) %&gt;% 
+#RENAME SQIs
+colnames(d1Y)[6:59] &lt;- c(paste0(&quot;SQI&quot;,1:54))
+  
+  
+
+d1F &lt;- d1 %&gt;% filter(Q1 ==&quot;I&#39;m a Parent / Legal Guardian&quot;)
+d1S &lt;- d1 %&gt;% filter(Q1 ==&quot;I&#39;m a Transition Stakeholder&quot;)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIk1hdHRoZXcgRmxhbmFnYW4gLSBDaGFwdGVyIDQgLSBEaXNzZXJ0YXRpb24iDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQoNCmBgYHtyfQ0KI2xvYWQgcGFja2FnZXMNCmxpYnJhcnkobGF2YWFuKQ0KbGlicmFyeShyZWFkeGwpDQpsaWJyYXJ5KHRpZHl2ZXJzZSkNCg0KI2dldCB0aGUgVERRSSBkYXRhDQpkMSA8LSByZWFkX2V4Y2VsKCJBbGxlbnRvd24ueGxzeCIpDQpkMiA8LSByZWFkX2V4Y2VsKCJBdm9uX0dyb3ZlLnhsc3giKQ0KZDMgPC0gcmVhZF9leGNlbCgiQnV0bGVyLnhsc3giKQ0KZDQgPC0gcmVhZF9leGNlbCgiQ2Fub25fTWNNaWxsYW4ueGxzeCIpDQpkNSA8LSByZWFkX2V4Y2VsKCJFYXN0X0x5Y29taW5nLnhsc3giKQ0KZDYgPC0gcmVhZF9leGNlbCgiTGViYW5vbi54bHN4IikNCmQ3IDwtIHJlYWRfZXhjZWwoIk1vdW50YWluX1ZpZXcueGxzeCIpDQpkOCA8LSByZWFkX2V4Y2VsKCJQQV9WaXJ0dWFsX0NoYXJ0ZXIueGxzeCIpDQpkOSA8LSByZWFkX2V4Y2VsKCJQbHVtX0Jvcm91Z2gueGxzeCIpDQpkMTAgPC0gcmVhZF9leGNlbCgiU291dGh3ZXN0ZXJuLnhsc3giKQ0KZDExIDwtIHJlYWRfZXhjZWwoIlVuaW9uX0FyZWEueGxzeCIpDQoNCiNtYWtlIGEgY29sdW1uIGluZGV4IGZvciByZWZlcmVuY2UsIGNoYW5nZSBkZiBhcyBuZWVkZWQgdG8gdXBkYXRlIC8gbW9kaWZ5IHRoZSBpbmRleCBsaXN0DQpjb2x1bW5faW5kZXggPC0gZGF0YS5mcmFtZShjb2xuYW1lcyhkMVkpKQ0KDQpgYGANCg0KYGBge3J9DQojQWxsZW50b3duDQoNCiN3aG9sZSBzaGVldCBjbGVhbg0KI1JlbmFtZSByb2xlLCBhZ2UsIGdlbmRlciwgc2Nob29sLCByYWNlDQpkMSA8LSBkMSAlPiUgcmVuYW1lKFJvbGUgPSBRMSkgJT4lIA0KICByZW5hbWUoQWdlID0gUTIpICU+JSByZW5hbWUoR2VuZGVyID0gUTMpICU+JSANCiAgcmVuYW1lKFNjaG9vbCA9IFE1KSAlPiUgcmVuYW1lKFJhY2VfRXRoID0gUTQpDQoNCiNyZW1vdmUgZmlyc3Qgcm93IGFjdGluZyBhcyBxdWVzdGlvbiBuYW1lIHdoaWNoIHdhcyBhZGRlZCBieSBRdWFsdHJpY3Mgb3V0LWRhdGVkIGV4cG9ydCBmdW5jdGlvbmFsaXR5Lg0KZDEgPC0gZDFbLWMoMSksXQ0KICANCg0KI0NsZWFuIGJ5IHJvbGUgLSBZb3V0aA0KZDFZIDwtIGQxICU+JSBmaWx0ZXIoUm9sZSA9PSJJJ20gYSBZb3VuZyBQZXJzb24iKSAlPiUgDQogIGZpbHRlcihGaW5pc2hlZD09IlRydWUiKSAlPiUgc2VsZWN0KC1jKDc3OjY5OCkpICU+JQ0KICBzZWxlY3QoLWMoODU6OTUpKSAlPiUgc2VsZWN0KC1jKDgxOjg0KSkgJT4lIA0KICBzZWxlY3QoLWMoNzU6NzYpKSAlPiUgc2VsZWN0ICgtYygxOjEwKSkgJT4lIA0KICBtdXRhdGUoUTc3MyA9IHN0cl9yZXBsYWNlKFE3NzMsIlNvbWVcclxuIiwiU29tZSIpKSAlPiUgDQogIG11dGF0ZShRNzczID0gc3RyX3JlcGxhY2UoUTc3MywiQSBsb3RcclxuIiwiQSBsb3QiKSkgJT4lDQogIG11dGF0ZShRNzczID0gc3RyX3JlcGxhY2UoUTc3MywiTm90IGF0IGFsXHJcbiIsIk5vdCBhdCBhbGwiKSkgJT4lDQogIHNlbGVjdCgtYyg2OjEwKSkgJT4lIA0KICBtdXRhdGVfYXQodmFycyg2OjU5KSwNCiAgICAgICAgICAgIH5hcy5udW1lcmljKHJlY29kZSguLA0KICAgICAgICAgICAgICAiQSBsb3QiPTMsDQogICAgICAgICAgICAgICJTb21lIj0yLA0KICAgICAgICAgICAgICAiTm90IGF0IGFsbCI9MSwNCiAgICAgICAgICAgICkpKSAlPiUgDQojUkVOQU1FIFNRSXMNCmNvbG5hbWVzKGQxWSlbNjo1OV0gPC0gYyhwYXN0ZTAoIlNRSSIsMTo1NCkpDQogIA0KICANCg0KZDFGIDwtIGQxICU+JSBmaWx0ZXIoUTEgPT0iSSdtIGEgUGFyZW50IC8gTGVnYWwgR3VhcmRpYW4iKQ0KZDFTIDwtIGQxICU+JSBmaWx0ZXIoUTEgPT0iSSdtIGEgVHJhbnNpdGlvbiBTdGFrZWhvbGRlciIpDQoNCmBgYA==</div>
 
 
 
