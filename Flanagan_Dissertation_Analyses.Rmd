@@ -310,6 +310,7 @@ d8S <- d8S %>% mutate_at(vars(3:6,15:22,31,32,41:44,53:56,65:72,81:87,96:108,117
               "Not at all"=1,
               "Not applicable"=0
             )))
+
 colnames(d8S)[3:6] <- c(paste0("SQI",1:4)) #add SQI to all items measuring a sub-indicator and add the number of the item.
 colnames(d8S)[15:22] <- c(paste0("SQI",5:12)) #add SQI to all items measuring a sub-indicator and add the number of the item.
 colnames(d8S)[31:32] <- c(paste0("SQI",13:14)) #add SQI to all items measuring a sub-indicator and add the number of the item.
@@ -320,7 +321,7 @@ colnames(d8S)[81:87] <- c(paste0("SQI",31:37)) #add SQI to all items measuring a
 colnames(d8S)[96:108] <- c(paste0("SQI",38:50)) #add SQI to all items measuring a sub-indicator and add the number of the item.
 colnames(d8S)[117:120] <- c(paste0("SQI",51:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
 
-d8S <- d8S %>% mutate_at(vars(9:11,25:27,35:37,47:49,59:61,75:77,90:92,111:113,123:125), #re-code all ADAPT ratings from string to numerical
+d8S <- d8S %>% mutate_at(vars(7:9,23:25,33:35,45:47,57:59,73:75,88:90,109:111,121:123,), #re-code all ADAPT ratings from string to numerical
             ~as.numeric(recode(.,
               "Limited Adaptation (2)"=2,
               "Full Adaptation (4)"=4,
@@ -329,7 +330,7 @@ d8S <- d8S %>% mutate_at(vars(9:11,25:27,35:37,47:49,59:61,75:77,90:92,111:113,1
               "Not Applicable"=0
             )))
 
-d8S <- d8S %>% mutate_at(vars(12:14,28:30,38:40,50:52,62:64,78:80,93:95,114:116,126:128), #re-code all ACCESS ratings from string to numerical
+d8S <- d8S %>% mutate_at(vars(10:12,26:28,36:38,48:50,60:62,76:78,91:93,112:114,124:126), #re-code all ACCESS ratings from string to numerical
             ~as.numeric(recode(.,
               "Limited Access (2)"=2,
               "Full Access (4)"=4,
@@ -338,8 +339,8 @@ d8S <- d8S %>% mutate_at(vars(12:14,28:30,38:40,50:52,62:64,78:80,93:95,114:116,
               "Not Applicable"=0
             )))
 
-d8S <- d8S %>% select(-c(15,16,31,32,41,42,53,54,65,66,81,82,96,97,117,118,129,130)) #remove resource level and effectiveness ratings. They are not used in the model
-
+d8S <- d8S %>% select(-c(13,14,29,30,39,40,51,52,63,64,79,80,94,95,115,116,127,128)) #remove resource level and effectiveness ratings. They are not used in the model
+d8S <- d8S %>% select(-c(115)) #remove Q168, duplicate field of LEA name
 ```
 
 ```{r}
@@ -348,6 +349,7 @@ d8S <- d8S %>% select(-c(15,16,31,32,41,42,53,54,65,66,81,82,96,97,117,118,129,1
 #union youth, family and stakeholder tables
 d8join <- full_join(d8Y,d8F) #youth and families
 d8final <- full_join(d8join,d8S) #join with stakeholders
+rm(d8join,d8,d8F,d8S,d8Y)
 
 ```
 
