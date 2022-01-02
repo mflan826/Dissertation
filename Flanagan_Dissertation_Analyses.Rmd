@@ -371,6 +371,5 @@ FlanaganFinalData <- full_join(FlanaganFinalData,d9final)
 FlanaganFinalData <- full_join(FlanaganFinalData,d10final)
 FlanaganFinalData <- full_join(FlanaganFinalData,d11final)
 as_tibble(FlanaganFinalData)
-print(FlanaganFinalData)
 
 ```
