@@ -26,16 +26,20 @@ d11 <- read_excel("Union_Area.xlsx")
 ```
 
 ```{r}
-#make a column index for reference, change df as needed to update / modify the index list
-column_indexY <- data.frame(colnames(d1Y)) #youth
-column_indexF <- data.frame(colnames(d1F)) #parents with 1 young person with a disability
-column_indexFm <- data.frame(colnames(d1Fm)) #parents with more than 1 young person with a disability
-column_indexS <- data.frame(colnames(d1S)) #transition stakeholders
+#make a column index for reference, change df as needed to update / modify the index list as cleaning is being completed. Makes de-bugging easier. Not Required. 
+column_indexY <- data.frame(colnames(d8Y)) #youth
+column_indexF <- data.frame(colnames(d8F)) #parents with 1 young person with a disability
+column_indexFm <- data.frame(colnames(d8Fm)) #parents with more than 1 young person with a disability
+column_indexS <- data.frame(colnames(d8S)) #transition stakeholders
 
 ```
 
+
+Process d1 through chunks 1 through 6. Then, find and replace "d1" chunks 1 through 5 below. Run the modified chunks to clean each site file EXCEPT for d8, which is a charter. Charter school data is structured slightly different and needs to be cleaned separately. See chunks 7 through 12 for cleaning charter data.
+
 ```{r}
-#whole sheet clean
+#CHUNK 1
+
 #Rename role, age, gender, school, race
 d1 <- d1 %>% rename(Role = Q1) %>% 
   rename(Age = Q2) %>% rename(Gender = Q3) %>% 
@@ -44,14 +48,15 @@ d1 <- d1 %>% rename(Role = Q1) %>%
 #remove first row acting as question name which was added by Qualtrics out-dated export functionality.
 d1 <- d1[-c(1),]
 ```  
-#D1
-```{r}
-#Cleaning Youth Responses
 
+```{r}
+#CHUNK 2
+
+#Cleaning Youth Responses
 d1Y <- d1 %>% filter(Role =="I'm a Young Person") %>% #filter out just youth responses
   filter(Finished=="True") %>% #only complete responses
   select(-c(77:698)) %>% #remove all fields from the family and stakeholder survey questions
-  select(-c(85:95)) %>% #remove unneeded embedded data from Qualtrics
+  select(-c(85:93)) %>% #remove unneeded embedded data from Qualtrics
   select(-c(81:84)) %>% #remove unneeded embedded demographic data from Qualtrics. Not accurate. Already have fields.
   select(-c(75:76)) %>% #remove written youth responses
   select (-c(1:10)) %>% #remove embedded survey data from Qualtrics (date, time, etc.)
@@ -72,17 +77,21 @@ d1Y <- d1Y %>% mutate_at(vars(6:59), #re-code all ratings from string to numeric
 
 colnames(d1Y)[6:59] <- c(paste0("SQI",1:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
 ```
-#D1
-```{r}
-#Cleaning Parent Responses - one young person
 
+```{r}
+#CHUNK 3
+
+#Cleaning Parent Responses - one young person
 d1F <- d1 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
   filter(Finished=="True") %>% #only complete responses
   select(-c(1:76)) %>% #remove youth response fields
   select(-c(1:151)) %>% #remove stakeholder response fields
   select(-c(6:10)) %>% #remove write-in demographics and unneeded demographics
   select(-c(10:12,21:23,26:28,33:35,40:42,51:53,61:63,77:79,84:88)) %>% #remove effectiveness ratings and written responses from parents.
-  select(c(1:59)) #only keep fields for parents responding about one young person
+  select(-c(60:419)) %>% #remove fields for parents responding about more than one young person
+  select(-c(60:77)) %>% #remove unneeded embedded data pt 1
+  select(-c(64:76)) %>% #remove unneeded embedded data pt 2
+  filter(Q166 == "I want to share about one young person")
 
 d1F <- d1F %>% mutate_at(vars(6:59), #re-code all ratings from string to numerical
             ~as.numeric(recode(.,
@@ -96,10 +105,11 @@ colnames(d1F)[6:59] <- c(paste0("SQI",1:54)) #add SQI to all items measuring a s
 d1F$Role <- as.character("I'm a Parent / Legal Guardian")
 
 ```
-#D1
-```{r}
-#Cleaning Parent Responses - multiple young people
 
+```{r}
+#CHUNK 4
+
+#Cleaning Parent Responses - multiple young people
 d1Fm <- d1 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
   filter(Finished=="True") %>% #only complete responses
   select(-c(1:76)) %>% #remove youth response fields
@@ -117,17 +127,19 @@ d1Fm <- d1Fm %>% mutate_at(vars(6:59), #re-code all ratings from string to numer
             )))
 
 ```
-#D1
-```{r}
-#Cleaning Stakeholder Responses
 
+```{r}
+#CHUNK 5
+
+#Cleaning Stakeholder Responses
 d1S <- d1 %>% filter(Role == "I'm a Transition Stakeholder") %>%
   filter(Finished=="True") %>% #only complete response
-  select(-c(1:10)) %>% #remove embedded data fields from Qualtrics
+  select(-c(1:10)) %>% #remove embedded demographic data fields from Qualtrics
   select(-c(2:66)) %>% #remove youth fields
   select(-c(3,4,5,8)) %>% #remove write-in fields and unneeded demo fields for stakeholders
   select(-c(17,18,35,36,47,48,61,62,75,76,93,94,110,111,133,134,147:150)) %>% #remove stakeholder written responses
-  select(c(1:130)) #only keep stakeholder fields
+  select(-c(131:599)) %>% #remove fields relevant to parents responding about more than one young person
+  select(-c(135:147)) #remove embedded scores as well as other unneeded embedded fields
 
 d1S <- d1S %>% mutate_at(vars(5:8,17:24,33,34,43:46,55:58,67:74,83:89,98:110,119:122), #re-code all sqi ratings from string to numerical
             ~as.numeric(recode(.,
@@ -167,45 +179,52 @@ d1S <- d1S %>% mutate_at(vars(12:14,28:30,38:40,50:52,62:64,78:80,93:95,114:116,
 d1S <- d1S %>% select(-c(15,16,31,32,41,42,53,54,65,66,81,82,96,97,117,118,129,130)) #remove resource level and effectiveness ratings. They are not used in the model
 
 ```
-#D1
-```{R}
+
+```{r}
+#CHUNK 6
+
 #union youth, family and stakeholder tables
-d1join <- full_join(d1Y,d1F)
-d1final <- full_join(d1join,d1S)
+d1join <- full_join(d1Y,d1F) #youth and families
+d1final <- full_join(d1join,d1S) #join with stakeholders
+rm(d1join,d1,d1F,d1S,d1Y)
 
 ```
-#D2
+
+
+Chunks 7 through 12 below are used ONLY for cleaning the charter data (d8)
+
 ```{r}
-#whole sheet clean
+#CHUNK 7
+
 #Rename role, age, gender, school, race
-d2 <- d2 %>% rename(Role = Q1) %>% 
+d8 <- d8 %>% rename(Role = Q1) %>% 
   rename(Age = Q2) %>% rename(Gender = Q3) %>% 
   rename(School = Q5) %>% rename(Race_Eth = Q4)
 
 #remove first row acting as question name which was added by Qualtrics out-dated export functionality.
-d2 <- d2[-c(1),]
+d8 <- d8[-c(1),]
 ```  
-#D2
+
 ```{r}
-#IMPORTANT: All sites other than Allentown do not have the two text field columns - 93 and 94, which means every column call is off by two below this point. Must be fixed.
+#CHUNK 8
 
 #Cleaning Youth Responses
-
-d2Y <- d2 %>% filter(Role =="I'm a Young Person") %>% #filter out just youth responses
+d8Y <- d8 %>% filter(Role =="I'm a Young Person") %>% #filter out just youth responses
   filter(Finished=="True") %>% #only complete responses
-  select(-c(77:698)) %>% #remove all fields from the family and stakeholder survey questions
-  select(-c(85:93)) %>% #remove unneeded embedded data from Qualtrics
-  select(-c(81:84)) %>% #remove unneeded embedded demographic data from Qualtrics. Not accurate. Already have fields.
-  select(-c(75:76)) %>% #remove written youth responses
-  select (-c(1:10)) %>% #remove embedded survey data from Qualtrics (date, time, etc.)
+  select(-c(75:696)) %>% #remove all fields from the family and stakeholder survey questions
+  select(-c(75:83)) %>% #remove embedded scores
+  select(-c(78:85)) %>% #remove fields relevant to families with more than one young person with a disability pt1
+  select(-c(79:80)) %>% #remove fields relevant to families with more than one young person with a disability pt2
+  select(-c(15:18)) %>% #remove youth extra demographic responses
+  select(-c(1:10)) %>% #remove embedded demographic data
+  select(-c(59:60)) %>% # remove youth written responses
   mutate(Q773 = Q773 %>% str_replace_all(c("Some\r\n" = "Some",
                                   "A lot\r\n" = "A lot",
                                   "Not at all\r\n" = "Not at all",
                                   "Some" = "Some",
                                   "A lot" = "A lot",
                                   "Not at all" = "Not at all")))
-  d2Y <- d2Y %>% select(-c(6:10)) #remove unneeded write-ins for youth demographics
-d2Y <- d2Y %>% mutate_at(vars(6:59), #re-code all ratings from string to numerical
+d8Y <- d8Y %>% mutate_at(vars(5:58), #re-code all ratings from string to numerical
             ~as.numeric(recode(.,
               "A lot"=3,
               "Some"=2,
@@ -213,21 +232,26 @@ d2Y <- d2Y %>% mutate_at(vars(6:59), #re-code all ratings from string to numeric
               "Don't Know / Doesn't Relate to Me" = 0,
             )))
 
-colnames(d2Y)[6:59] <- c(paste0("SQI",1:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d8Y)[5:58] <- c(paste0("SQI",1:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
 ```
-#D2
+
 ```{r}
+#CHUNK 9
+
 #Cleaning Parent Responses - one young person
-
-d2F <- d2 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
+d8F <- d8 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
   filter(Finished=="True") %>% #only complete responses
-  select(-c(1:76)) %>% #remove youth response fields
-  select(-c(1:151)) %>% #remove stakeholder response fields
-  select(-c(6:10)) %>% #remove write-in demographics and unneeded demographics
-  select(-c(10:12,21:23,26:28,33:35,40:42,51:53,61:63,77:79,84:88)) %>% #remove effectiveness ratings and written responses from parents.
-  select(c(1:59)) #only keep fields for parents responding about one young person
+  select(-c(1:74)) %>% #remove youth response fields
+  select(-c(1:149)) %>% #remove stakeholder response fields
+  select(-c(5:8)) %>% #remove write-in demographics and unneeded demographics
+  select(-c(9:11,20:22,25:27,32:34,39:41,50:52,60:62,76:78,83:87)) %>% #remove effectiveness ratings and written responses from parents.
+  select(-c(59:418)) %>% #remove fields for parents responding about more than one young person
+  select(-c(59:89)) %>% #remove unneeded embedded data pt 1
+  select(-c(62:69)) %>% #remove unneeded embedded data pt 2
+  select(-c(63)) %>% #remove unneeded embedded data pt 3
+  filter(Q166 == "I want to share about one young person")
 
-d2F <- d2F %>% mutate_at(vars(6:59), #re-code all ratings from string to numerical
+d8F <- d8F %>% mutate_at(vars(5:58), #re-code all ratings from string to numerical
             ~as.numeric(recode(.,
               "A lot"=3,
               "Some"=2,
@@ -235,23 +259,25 @@ d2F <- d2F %>% mutate_at(vars(6:59), #re-code all ratings from string to numeric
               "Not applicable" = 0,
             )))
 
-colnames(d2F)[6:59] <- c(paste0("SQI",1:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-d2F$Role <- as.character("I'm a Parent / Legal Guardian")
+colnames(d8F)[5:58] <- c(paste0("SQI",1:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+d8F$Role <- as.character("I'm a Parent / Legal Guardian")
 
 ```
-#D2
-```{r}
-#Cleaning Parent Responses - multiple young people
 
-d2Fm <- d2 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
+```{r}
+#CHUNK 10
+
+#Cleaning Parent Responses - multiple young people
+d8Fm <- d8 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
   filter(Finished=="True") %>% #only complete responses
   select(-c(1:76)) %>% #remove youth response fields
-  select(-c(1:151)) %>% #remove stakeholder response fields
+  select(-c(1:149)) %>% #remove stakeholder response fields
   select(-c(6:10)) %>% #remove write-in demographics and unneeded demographics from single youth parents
   select(-c(10:12,21:23,26:28,33:35,40:42,51:53,61:63,77:79,84:88)) %>% #remove effectiveness ratings and written responses from parents.
-  select(-c(1:59)) #remove item fields for single youth parents
+  select(-c(131:599)) %>% #remove fields relevant to parents responding about more than one young person
+  select(-c(135:147)) #remove embedded scores as well as other unneeded embedded fields
 
-d2Fm <- d2Fm %>% mutate_at(vars(6:59), #re-code all ratings from string to numerical
+d8Fm <- d8Fm %>% mutate_at(vars(6:59), #re-code all ratings from string to numerical
             ~as.numeric(recode(.,
               "A lot"=3,
               "Some"=2,
@@ -260,36 +286,41 @@ d2Fm <- d2Fm %>% mutate_at(vars(6:59), #re-code all ratings from string to numer
             )))
 
 ```
-#D2
+
 ```{r}
+#CHUNK 11
+
 #Cleaning Stakeholder Responses
 
-d2S <- d2 %>% filter(Role == "I'm a Transition Stakeholder") %>%
+d8S <- d8 %>% filter(Role == "I'm a Transition Stakeholder") %>%
   filter(Finished=="True") %>% #only complete response
-  select(-c(1:10)) %>% #remove embedded data fields from Qualtrics
-  select(-c(2:66)) %>% #remove youth fields
-  select(-c(3,4,5,8)) %>% #remove write-in fields and unneeded demo fields for stakeholders
-  select(-c(17,18,35,36,47,48,61,62,75,76,93,94,110,111,133,134,147:150)) %>% #remove stakeholder written responses
-  select(c(1:130)) #only keep stakeholder fields
+  select(-c(1:10)) %>% #remove embedded demographic data fields from Qualtrics
+  select(-c(2:64)) %>% #remove youth fields
+  select(-c(3,4,5,6)) %>% #remove write-in fields and unneeded demo fields for stakeholders
+  select(-c(15,16,33,34,45,46,59,60,73,74,91,92,108,109,131,132,145:148)) %>% #remove stakeholder written responses
+  select(-c(129:577)) %>% #remove fields relevant to parents responding about more than one young person
+  select(-c(129:159)) %>% #remove embedded scores as well as other unneeded embedded fields pt 1
+  select(-c(132:139)) %>% #remove embedded scores as well as other unneeded embedded fields pt 2
+  select(-c(133)) #remove embedded scores as well as other unneeded embedded fields pt 3
 
-d2S <- d2S %>% mutate_at(vars(5:8,17:24,33,34,43:46,55:58,67:74,83:89,98:110,119:122), #re-code all sqi ratings from string to numerical
+d8S <- d8S %>% mutate_at(vars(3:6,15:22,31,32,41:44,53:56,65:72,81:87,96:108,117:120), #re-code all sqi ratings from string to numerical
             ~as.numeric(recode(.,
               "A lot"=3,
               "Some"=2,
               "Not at all"=1,
               "Not applicable"=0
             )))
-colnames(d2S)[5:8] <- c(paste0("SQI",1:4)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d2S)[17:24] <- c(paste0("SQI",5:12)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d2S)[33:34] <- c(paste0("SQI",13:14)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d2S)[43:46] <- c(paste0("SQI",15:18)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d2S)[55:58] <- c(paste0("SQI",19:22)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d2S)[67:74] <- c(paste0("SQI",23:30)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d2S)[83:89] <- c(paste0("SQI",31:37)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d2S)[98:110] <- c(paste0("SQI",38:50)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d2S)[119:122] <- c(paste0("SQI",51:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d8S)[3:6] <- c(paste0("SQI",1:4)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d8S)[15:22] <- c(paste0("SQI",5:12)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d8S)[31:32] <- c(paste0("SQI",13:14)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d8S)[41:44] <- c(paste0("SQI",15:18)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d8S)[53:56] <- c(paste0("SQI",19:22)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d8S)[65:72] <- c(paste0("SQI",23:30)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d8S)[81:87] <- c(paste0("SQI",31:37)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d8S)[96:108] <- c(paste0("SQI",38:50)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d8S)[117:120] <- c(paste0("SQI",51:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
 
-d2S <- d2S %>% mutate_at(vars(9:11,25:27,35:37,47:49,59:61,75:77,90:92,111:113,123:125), #re-code all ADAPT ratings from string to numerical
+d8S <- d8S %>% mutate_at(vars(9:11,25:27,35:37,47:49,59:61,75:77,90:92,111:113,123:125), #re-code all ADAPT ratings from string to numerical
             ~as.numeric(recode(.,
               "Limited Adaptation (2)"=2,
               "Full Adaptation (4)"=4,
@@ -298,7 +329,7 @@ d2S <- d2S %>% mutate_at(vars(9:11,25:27,35:37,47:49,59:61,75:77,90:92,111:113,1
               "Not Applicable"=0
             )))
 
-d2S <- d2S %>% mutate_at(vars(12:14,28:30,38:40,50:52,62:64,78:80,93:95,114:116,126:128), #re-code all ACCESS ratings from string to numerical
+d8S <- d8S %>% mutate_at(vars(12:14,28:30,38:40,50:52,62:64,78:80,93:95,114:116,126:128), #re-code all ACCESS ratings from string to numerical
             ~as.numeric(recode(.,
               "Limited Access (2)"=2,
               "Full Access (4)"=4,
@@ -307,17 +338,32 @@ d2S <- d2S %>% mutate_at(vars(12:14,28:30,38:40,50:52,62:64,78:80,93:95,114:116,
               "Not Applicable"=0
             )))
 
-d2S <- d2S %>% select(-c(15,16,31,32,41,42,53,54,65,66,81,82,96,97,117,118,129,130)) #remove resource level and effectiveness ratings. They are not used in the model
+d8S <- d8S %>% select(-c(15,16,31,32,41,42,53,54,65,66,81,82,96,97,117,118,129,130)) #remove resource level and effectiveness ratings. They are not used in the model
 
 ```
-#D2
-```{R}
+
+```{r}
+#CHUNK 12
+
 #union youth, family and stakeholder tables
-d2join <- full_join(d2Y,d2F)
-d2final <- full_join(d2join,d1S)
+d8join <- full_join(d8Y,d8F) #youth and families
+d8final <- full_join(d8join,d8S) #join with stakeholders
 
 ```
-#last step
+
+Do not find and replace data tables d1 to d11 in the chunk below. It is used for joining all of the site data tables generated by repeating the chunks above.
+
 ```{R}
 #Join data from all sites
-
+FlanaganFinalData <- full_join(d1final,d2final)
+FlanaganFinalData <- full_join(FlanaganFinalData,d3final)
+FlanaganFinalData <- full_join(FlanaganFinalData,d4final)
+FlanaganFinalData <- full_join(FlanaganFinalData,d5final)
+FlanaganFinalData <- full_join(FlanaganFinalData,d6final)
+FlanaganFinalData <- full_join(FlanaganFinalData,d7final)
+FlanaganFinalData <- full_join(FlanaganFinalData,d8final)
+FlanaganFinalData <- full_join(FlanaganFinalData,d9final)
+FlanaganFinalData <- full_join(FlanaganFinalData,d10final)
+FlanaganFinalData <- full_join(FlanaganFinalData,d11final)
+as.tibble(FlanaganFinalData)
+print(FlanaganFinalData)
