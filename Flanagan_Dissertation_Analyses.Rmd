@@ -35,7 +35,7 @@ column_indexS <- data.frame(colnames(d8S)) #transition stakeholders
 ```
 
 
-Process d1 through chunks 1 through 6. Then, find and replace "d1" chunks 1 through 5 below. Run the modified chunks to clean each site file EXCEPT for d8, which is a charter. Charter school data is structured slightly different and needs to be cleaned separately. See chunks 7 through 12 for cleaning charter data.
+Process d1 through chunks 1 through 6. Then, find and replace "d1" chunks 1 through 5 below. Run the modified chunks to clean each site file EXCEPT for d8, which is a charter. Charter school data is structured slightly different and needs to be cleaned separately. See chunks 7 through 12 for cleaning charter data. Each replacement should be for 51 occurances. Less or more means there is an error and something was changed.
 
 ```{r}
 #CHUNK 1
@@ -371,5 +371,15 @@ FlanaganFinalData <- full_join(FlanaganFinalData,d9final)
 FlanaganFinalData <- full_join(FlanaganFinalData,d10final)
 FlanaganFinalData <- full_join(FlanaganFinalData,d11final)
 as_tibble(FlanaganFinalData)
+write.csv(FlanaganFinalData, file = "FlanaganFinalData.csv")
+
+```
+
+```{r}
+#descriptive statistics on sample
+library(psych) #turn off before using Lavaan because it masks the covariance matrix functions in Lavaan and it masks parts of ggplot2.
+
+summarystats <- as_tibble(describe(FlanaganFinalData))
+
 
 ```
