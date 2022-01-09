@@ -1,6 +1,8 @@
 ---
 title: "Matthew Flanagan - Chapter 4 - Dissertation"
 output: html_notebook
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -41,19 +43,19 @@ Process d1 through chunks 1 through 6. Then, find and replace "d1" chunks 1 thro
 #CHUNK 1
 
 #Rename role, age, gender, school, race
-d11 <- d11 %>% rename(Role = Q1) %>% 
+d1 <- d1 %>% rename(Role = Q1) %>% 
   rename(Age = Q2) %>% rename(Gender = Q3) %>% 
   rename(School = Q5) %>% rename(Race_Eth = Q4)
 
 #remove first row acting as question name which was added by Qualtrics out-dated export functionality.
-d11 <- d11[-c(1),]
+d1 <- d1[-c(1),]
 ```  
 
 ```{r}
 #CHUNK 2
 
 #Cleaning Youth Responses
-d11Y <- d11 %>% filter(Role =="I'm a Young Person") %>% #filter out just youth responses
+d1Y <- d1 %>% filter(Role =="I'm a Young Person") %>% #filter out just youth responses
   filter(Finished=="True") %>% #only complete responses
   select(-c(77:698)) %>% #remove all fields from the family and stakeholder survey questions
   select(-c(85:93)) %>% #remove unneeded embedded data from Qualtrics
@@ -66,23 +68,23 @@ d11Y <- d11 %>% filter(Role =="I'm a Young Person") %>% #filter out just youth r
                                   "Some" = "Some",
                                   "A lot" = "A lot",
                                   "Not at all" = "Not at all")))
-  d11Y <- d11Y %>% select(-c(6:10)) #remove unneeded write-ins for youth demographics
-d11Y <- d11Y %>% mutate_at(vars(6:59), #re-code all ratings from string to numerical
+  d1Y <- d1Y %>% select(-c(6:10)) #remove unneeded write-ins for youth demographics
+d1Y <- d1Y %>% mutate_at(vars(6:59), #re-code all ratings from string to numerical
             ~as.numeric(recode(.,
-              "A lot"=3,
-              "Some"=2,
-              "Not at all"=1,
-              "Don't Know / Doesn't Relate to Me" = 0,
+              "A lot"=4,
+              "Some"=3,
+              "Not at all"=2,
+              "Don't Know / Doesn't Relate to Me" = 1,
             )))
 
-colnames(d11Y)[6:59] <- c(paste0("SQI",1:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d1Y)[6:59] <- c(paste0("SQI",1:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
 ```
 
 ```{r}
 #CHUNK 3
 
 #Cleaning Parent Responses - one young person
-d11F <- d11 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
+d1F <- d1 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
   filter(Finished=="True") %>% #only complete responses
   select(-c(1:76)) %>% #remove youth response fields
   select(-c(1:151)) %>% #remove stakeholder response fields
@@ -93,16 +95,16 @@ d11F <- d11 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
   select(-c(64:76)) %>% #remove unneeded embedded data pt 2
   filter(Q166 == "I want to share about one young person")
 
-d11F <- d11F %>% mutate_at(vars(6:59), #re-code all ratings from string to numerical
+d1F <- d1F %>% mutate_at(vars(6:59), #re-code all ratings from string to numerical
             ~as.numeric(recode(.,
-              "A lot"=3,
-              "Some"=2,
-              "Not at all"=1,
-              "Not applicable" = 0,
+              "A lot"=4,
+              "Some"=3,
+              "Not at all"=2,
+              "Not applicable" = 1,
             )))
 
-colnames(d11F)[6:59] <- c(paste0("SQI",1:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-d11F$Role <- as.character("I'm a Parent / Legal Guardian")
+colnames(d1F)[6:59] <- c(paste0("SQI",1:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+d1F$Role <- as.character("I'm a Parent / Legal Guardian")
 
 ```
 
@@ -110,7 +112,7 @@ d11F$Role <- as.character("I'm a Parent / Legal Guardian")
 #CHUNK 4
 
 #Cleaning Parent Responses - multiple young people
-d11Fm <- d11 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
+d1Fm <- d1 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
   filter(Finished=="True") %>% #only complete responses
   select(-c(1:76)) %>% #remove youth response fields
   select(-c(1:151)) %>% #remove stakeholder response fields
@@ -118,12 +120,12 @@ d11Fm <- d11 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
   select(-c(10:12,21:23,26:28,33:35,40:42,51:53,61:63,77:79,84:88)) %>% #remove effectiveness ratings and written responses from parents.
   select(-c(1:59)) #remove item fields for single youth parents
 
-d11Fm <- d11Fm %>% mutate_at(vars(6:59), #re-code all ratings from string to numerical
+d1Fm <- d1Fm %>% mutate_at(vars(6:59), #re-code all ratings from string to numerical
             ~as.numeric(recode(.,
-              "A lot"=3,
-              "Some"=2,
-              "Not at all"=1,
-              "Not applicable" = 0,
+              "A lot"=4,
+              "Some"=3,
+              "Not at all"=2,
+              "Not applicable" = 1,
             )))
 
 ```
@@ -132,7 +134,7 @@ d11Fm <- d11Fm %>% mutate_at(vars(6:59), #re-code all ratings from string to num
 #CHUNK 5
 
 #Cleaning Stakeholder Responses
-d11S <- d11 %>% filter(Role == "I'm a Transition Stakeholder") %>%
+d1S <- d1 %>% filter(Role == "I'm a Transition Stakeholder") %>%
   filter(Finished=="True") %>% #only complete response
   select(-c(1:10)) %>% #remove embedded demographic data fields from Qualtrics
   select(-c(2:66)) %>% #remove youth fields
@@ -141,45 +143,45 @@ d11S <- d11 %>% filter(Role == "I'm a Transition Stakeholder") %>%
   select(-c(131:599)) %>% #remove fields relevant to parents responding about more than one young person
   select(-c(135:147)) #remove embedded scores as well as other unneeded embedded fields
 
-d11S <- d11S %>% mutate_at(vars(5:8,17:24,33,34,43:46,55:58,67:74,83:89,98:110,119:122), #re-code all sqi ratings from string to numerical
+d1S <- d1S %>% mutate_at(vars(5:8,17:24,33,34,43:46,55:58,67:74,83:89,98:110,119:122), #re-code all sqi ratings from string to numerical
             ~as.numeric(recode(.,
-              "A lot"=3,
-              "Some"=2,
-              "Not at all"=1,
-              "Not applicable"=0,
-              "Not Applicable"=0
+              "A lot"=4,
+              "Some"=3,
+              "Not at all"=2,
+              "Not applicable"=1,
+              "Not Applicable"=1
             )))
-colnames(d11S)[5:8] <- c(paste0("SQI",1:4)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d11S)[17:24] <- c(paste0("SQI",5:12)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d11S)[33:34] <- c(paste0("SQI",13:14)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d11S)[43:46] <- c(paste0("SQI",15:18)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d11S)[55:58] <- c(paste0("SQI",19:22)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d11S)[67:74] <- c(paste0("SQI",23:30)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d11S)[83:89] <- c(paste0("SQI",31:37)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d11S)[98:110] <- c(paste0("SQI",38:50)) #add SQI to all items measuring a sub-indicator and add the number of the item.
-colnames(d11S)[119:122] <- c(paste0("SQI",51:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d1S)[5:8] <- c(paste0("SQI",1:4)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d1S)[17:24] <- c(paste0("SQI",5:12)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d1S)[33:34] <- c(paste0("SQI",13:14)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d1S)[43:46] <- c(paste0("SQI",15:18)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d1S)[55:58] <- c(paste0("SQI",19:22)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d1S)[67:74] <- c(paste0("SQI",23:30)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d1S)[83:89] <- c(paste0("SQI",31:37)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d1S)[98:110] <- c(paste0("SQI",38:50)) #add SQI to all items measuring a sub-indicator and add the number of the item.
+colnames(d1S)[119:122] <- c(paste0("SQI",51:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
 
-d11S <- d11S %>% mutate_at(vars(9:11,25:27,35:37,47:49,59:61,75:77,90:92,111:113,123:125), #re-code all ADAPT ratings from string to numerical
+d1S <- d1S %>% mutate_at(vars(9:11,25:27,35:37,47:49,59:61,75:77,90:92,111:113,123:125), #re-code all ADAPT ratings from string to numerical
             ~as.numeric(recode(.,
-              "Limited Adaptation (2)"=2,
-              "Full Adaptation (4)"=4,
-              "No Adaptation (1)"=1,
-              "Partial Adaptation (3)"=3,
-              "Not Applicable"=0,
-              "Not applicable"=0
-            )))
-
-d11S <- d11S %>% mutate_at(vars(12:14,28:30,38:40,50:52,62:64,78:80,93:95,114:116,126:128), #re-code all ACCESS ratings from string to numerical
-            ~as.numeric(recode(.,
-              "Limited Access (2)"=2,
-              "Full Access (4)"=4,
-              "No Access (1)"=1,
-              "Partial Access (3)"=3,
-              "Not Applicable"=0,
-              "Not applicable"=0
+              "Full Adaptation (4)"=5,
+              "Partial Adaptation (3)"=4,
+              "Limited Adaptation (2)"=3,
+              "No Adaptation (1)"=2,
+              "Not Applicable"=1,
+              "Not applicable"=1
             )))
 
-d11S <- d11S %>% select(-c(15,16,31,32,41,42,53,54,65,66,81,82,96,97,117,118,129,130)) #remove resource level and effectiveness ratings. They are not used in the model
+d1S <- d1S %>% mutate_at(vars(12:14,28:30,38:40,50:52,62:64,78:80,93:95,114:116,126:128), #re-code all ACCESS ratings from string to numerical
+            ~as.numeric(recode(.,
+              "Full Access (4)"=5,
+              "Partial Access (3)"=4,
+              "Limited Access (2)"=3,
+              "No Access (1)"=2,
+              "Not Applicable"=1,
+              "Not applicable"=1
+            )))
+
+d1S <- d1S %>% select(-c(15,16,31,32,41,42,53,54,65,66,81,82,96,97,117,118,129,130)) #remove resource level and effectiveness ratings. They are not used in the model
 
 ```
 
@@ -187,9 +189,9 @@ d11S <- d11S %>% select(-c(15,16,31,32,41,42,53,54,65,66,81,82,96,97,117,118,129
 #CHUNK 6
 
 #union youth, family and stakeholder tables
-d11join <- full_join(d11Y,d11F) #youth and families
-d11final <- full_join(d11join,d11S) #join with stakeholders
-rm(d11join,d11,d11F,d11S,d11Y)
+d1join <- full_join(d1Y,d1F) #youth and families
+d1final <- full_join(d1join,d1S) #join with stakeholders
+rm(d1join,d1,d1F,d1S,d1Y)
 
 ```
 
@@ -229,10 +231,10 @@ d8Y <- d8 %>% filter(Role =="I'm a Young Person") %>% #filter out just youth res
                                   "Not at all" = "Not at all")))
 d8Y <- d8Y %>% mutate_at(vars(5:58), #re-code all ratings from string to numerical
             ~as.numeric(recode(.,
-              "A lot"=3,
-              "Some"=2,
-              "Not at all"=1,
-              "Don't Know / Doesn't Relate to Me" = 0,
+              "A lot"=4,
+              "Some"=3,
+              "Not at all"=2,
+              "Don't Know / Doesn't Relate to Me" = 1,
             )))
 
 colnames(d8Y)[5:58] <- c(paste0("SQI",1:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
@@ -256,10 +258,10 @@ d8F <- d8 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
 
 d8F <- d8F %>% mutate_at(vars(5:58), #re-code all ratings from string to numerical
             ~as.numeric(recode(.,
-              "A lot"=3,
-              "Some"=2,
-              "Not at all"=1,
-              "Not applicable" = 0,
+              "A lot"=4,
+              "Some"=3,
+              "Not at all"=2,
+              "Not applicable" = 1,
             )))
 
 colnames(d8F)[5:58] <- c(paste0("SQI",1:54)) #add SQI to all items measuring a sub-indicator and add the number of the item.
@@ -282,10 +284,10 @@ d8Fm <- d8 %>% filter(Role =="I'm a Parent / Legal Guardian") %>%
 
 d8Fm <- d8Fm %>% mutate_at(vars(6:59), #re-code all ratings from string to numerical
             ~as.numeric(recode(.,
-              "A lot"=3,
-              "Some"=2,
-              "Not at all"=1,
-              "Not applicable" = 0,
+              "A lot"=4,
+              "Some"=3,
+              "Not at all"=2,
+              "Not applicable" = 1,
             )))
 
 ```
@@ -308,10 +310,10 @@ d8S <- d8 %>% filter(Role == "I'm a Transition Stakeholder") %>%
 
 d8S <- d8S %>% mutate_at(vars(3:6,15:22,31,32,41:44,53:56,65:72,81:87,96:108,117:120), #re-code all sqi ratings from string to numerical
             ~as.numeric(recode(.,
-              "A lot"=3,
-              "Some"=2,
-              "Not at all"=1,
-              "Not applicable"=0
+              "A lot"=4,
+              "Some"=3,
+              "Not at all"=2,
+              "Not applicable"=1
             )))
 
 colnames(d8S)[3:6] <- c(paste0("SQI",1:4)) #add SQI to all items measuring a sub-indicator and add the number of the item.
@@ -326,20 +328,22 @@ colnames(d8S)[117:120] <- c(paste0("SQI",51:54)) #add SQI to all items measuring
 
 d8S <- d8S %>% mutate_at(vars(7:9,23:25,33:35,45:47,57:59,73:75,88:90,109:111,121:123,), #re-code all ADAPT ratings from string to numerical
             ~as.numeric(recode(.,
-              "Limited Adaptation (2)"=2,
-              "Full Adaptation (4)"=4,
-              "No Adaptation (1)"=1,
-              "Partial Adaptation (3)"=3,
-              "Not Applicable"=0
+              "Full Adaptation (4)"=5,
+              "Partial Adaptation (3)"=4,
+              "Limited Adaptation (2)"=3,
+              "No Adaptation (1)"=2,
+              "Not Applicable"=1,
+              "Not applicable"=1
             )))
 
 d8S <- d8S %>% mutate_at(vars(10:12,26:28,36:38,48:50,60:62,76:78,91:93,112:114,124:126), #re-code all ACCESS ratings from string to numerical
             ~as.numeric(recode(.,
-              "Limited Access (2)"=2,
-              "Full Access (4)"=4,
-              "No Access (1)"=1,
-              "Partial Access (3)"=3,
-              "Not Applicable"=0
+              "Full Access (4)"=5,
+              "Partial Access (3)"=4,
+              "Limited Access (2)"=3,
+              "No Access (1)"=2,
+              "Not Applicable"=1,
+              "Not applicable"=1
             )))
 
 d8S <- d8S %>% select(-c(13,14,29,30,39,40,51,52,63,64,79,80,94,95,115,116,127,128)) #remove resource level and effectiveness ratings. They are not used in the model
@@ -378,6 +382,11 @@ write.csv(FlanaganFinalData, file = "FlanaganFinalData.csv")
 ```
 
 ```{r}
+#get cleaned data if session looses environment
+FlanaganFinalData <- read.csv("FlanaganFinalData.csv",header = TRUE)
+```
+
+```{r}
 #descriptive statistics on sample demographics
 library(psych) #turn off before using Lavaan because it masks the covariance matrix functions in Lavaan.
 library(ggplot2)
@@ -402,21 +411,47 @@ Age <- ggplot(data=subset(FlanaganFinalData,!is.na(Age)),aes(x=Age)) +
 ```
 
 ```{r}
+library(psych)
 library(corrplot)
 library(polycor) #masks polyserial from pysch package
+library(FactoMineR)
 
 #subset
-itemsonly <- select(FlanaganFinalData,c(6:59))
+all_items <- as_tibble(na.omit((select(FlanaganFinalData,c(7:60)))))
+QI2_items <- as_tibble(select(all_items,c(5:12)))
+trns_items <- as_tibble(select(all_items,c(1:4,13:54)))
 
-#Correlation matrix to find which items are most strongly related after removing youth dev SQIs
-SQIitemcorrelations <- polychoric(itemsonly,smooth=TRUE,global=TRUE, ML = FALSE,
-       std.err=FALSE,weight=NULL,progress=TRUE,na.rm=TRUE, delete=TRUE)
+#Create and plot a correlation matrix of the SQIs
 
-polyplot <- corrplot(SQIitemcorrelations$rho,
-                     method = "number",
-                     type = "lower")
+#all items
+all_items_correlations <- polychoric(all_items,smooth=TRUE,global=TRUE,weight=NULL,progress=TRUE,na.rm=TRUE, delete=TRUE)
+all_items_corrplot <- corrplot(SQIitemcorrelations$rho,type = "lower")
+
+#just QI2
+QI2_items_correlations <- polychoric(QI2_items,smooth=TRUE,global=TRUE,weight=NULL,progress=TRUE,na.rm=TRUE, delete=TRUE)
+QI2_items_corrplot <- corrplot(QI2_items_correlations$rho,type = "lower",method="number")
+
+#all besides QI2
+trns_items_correlations <- polychoric(trns_items,smooth=TRUE,global=TRUE,weight=NULL,progress=TRUE,na.rm=TRUE, delete=TRUE)
+trns_items_corrplot <- corrplot(trns_items_correlations$rho,type = "lower",method="number")
 
 #EFA to find items with strongest factor loadings on transition single dimension of transition planning
 
+#Check Factorability of the data
+trns_KMO <- KMO(trns_items)
+trns_anticorr <- corrplot(KMO_trns$ImCov,type= "lower",method = "number")
+trns_Bart <- cortest.bartlett(trns_items_correlations$rho,n=618)
+
+#PCA
+trns_PCA <- principal(trns_items_correlations$rho,
+          nfactors = 1,
+          residuals = TRUE,
+          rotate = "none",
+          n.obs = 618,
+          covar = TRUE,
+          cor = "poly")
+
+trns_PCA_eigenvalues <- as_tibble(trns_PCA$values)
+trns_PCA_loadings <- as_tibble(trns_PCA$loadings)
 ```
 

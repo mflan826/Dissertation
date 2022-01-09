@@ -5,3 +5,22 @@ Role:
 
 Age: 
 Median is 17, positive skewness (.9) meaning that more students were below the average age of 17.2. Range between 14 and 25. 
+
+Gender:
+75 female, 115 male, 2 third-gender, 3 non-disclosed
+
+prof roles:
+
+
+Notes from PCA/EFA.
+The goal of a PCA is to replicate the correlation matrix using a set of components that are fewer in number and linear combinations of the original set of items. Will be using the princpal components in the SEM instead of all of the individual items. 
+
+- KMO based upon polychloric correlation (Rho) was .919
+- Bartlett based upon poly corr Rho was less than .05 signaling that the matrix was not an itentiy matrix (diagonals 1 and all other correlations 0)
+-Visual review of the corr matrix shows no negative correlations.
+
+	PCA Results
+		Communalities: 
+
+
+
