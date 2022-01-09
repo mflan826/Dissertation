@@ -370,16 +370,53 @@ FlanaganFinalData <- full_join(FlanaganFinalData,d8final)
 FlanaganFinalData <- full_join(FlanaganFinalData,d9final)
 FlanaganFinalData <- full_join(FlanaganFinalData,d10final)
 FlanaganFinalData <- full_join(FlanaganFinalData,d11final)
+FlanaganFinalData$Age <- as.numeric(FlanaganFinalData$Age)
+FlanaganFinalData <- rename(FlanaganFinalData,ProfessionalRole = Q65)
 as_tibble(FlanaganFinalData)
 write.csv(FlanaganFinalData, file = "FlanaganFinalData.csv")
 
 ```
 
 ```{r}
-#descriptive statistics on sample
-library(psych) #turn off before using Lavaan because it masks the covariance matrix functions in Lavaan and it masks parts of ggplot2.
+#descriptive statistics on sample demographics
+library(psych) #turn off before using Lavaan because it masks the covariance matrix functions in Lavaan.
+library(ggplot2)
 
-summarystats <- as_tibble(describe(FlanaganFinalData))
+itemstatistics <- describe(select(FlanaganFinalData,c(6:59)))
 
+Role <- ggplot(data=FlanaganFinalData,aes(x=Role)) +
+  geom_bar() +
+  stat_count(geom="text",
+             aes(label = stat(count)))
+
+Gender <- ggplot(data=subset(FlanaganFinalData,!is.na(Gender)),aes(x=Gender)) +
+  geom_bar() +
+  stat_count(geom="text",
+             aes(label = stat(count)))
+
+Age <- ggplot(data=subset(FlanaganFinalData,!is.na(Age)),aes(x=Age)) +
+  geom_histogram(binwidth = 1,color="black",fill="white") +
+  stat_count(geom="text",
+             aes(label=stat(count)))
 
 ```
+
+```{r}
+library(corrplot)
+library(polycor) #masks polyserial from pysch package
+
+#subset
+itemsonly <- select(FlanaganFinalData,c(6:59))
+
+#Correlation matrix to find which items are most strongly related after removing youth dev SQIs
+SQIitemcorrelations <- polychoric(itemsonly,smooth=TRUE,global=TRUE, ML = FALSE,
+       std.err=FALSE,weight=NULL,progress=TRUE,na.rm=TRUE, delete=TRUE)
+
+polyplot <- corrplot(SQIitemcorrelations$rho,
+                     method = "number",
+                     type = "lower")
+
+#EFA to find items with strongest factor loadings on transition single dimension of transition planning
+
+```
+
