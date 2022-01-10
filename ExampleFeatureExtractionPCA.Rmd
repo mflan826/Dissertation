@@ -1,0 +1,42 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+#Example of feature extraction using PCA
+library(data.table)
+library(dplyr)
+library(datasets)
+library(ggplot2)
+
+data <- data.table(read.csv("PCAtestdata.csv"))
+data <- data[1:87,]
+
+pizzas <- copy(data)
+pizzas <- pizzas[, brand := NULL] #make target null because we want the analyses to tell us the different types
+pca <- prcomp(pizzas, scale. = TRUE)
+
+#plot pcs to see how they divide the data into clusters depending upon the characterisics that define the clusters
+pca_1_2 <- data.frame(pca$x[, 1:2])
+plot(pca$x[,1], pca$x[,2])
+
+#Calculate the percentage of variation within each principal component
+pca_var <- pca$sdev^2 #get variance
+pca_var_perc <- round(pca_var/sum(pca_var)*100,1) # each PC variance 
+
+#plot the PC variance
+barplot(pca_var_perc,main= "PC Variation Plot", xlab="Principal Components", ylab="Percentage of Variance",ylim = c(0,100))
+
+#assign weights to features in each PCA (loadings), with an array of loadings for each PC being an Eigenvector
+PC1 <- pca$rotation[,1]
+PC1_scores <- abs(PC1)
+PC1_scores_ordered <- sort(PC1_scores,decreasing = TRUE)
+names(PC1_scores_ordered)
+
+#differentiate between levels of target variable using most important features
+ggplot(data,aes(x=data$cal,y=data$mois,color = data$brand)) +
+  geom_point() +
+  labs(title = "Pizza brands by two most important differentating characteristics")
+
+```
