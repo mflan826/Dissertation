@@ -408,7 +408,75 @@ Age <- ggplot(data=subset(FlanaganFinalData,!is.na(Age)),aes(x=Age)) +
   stat_count(geom="text",
              aes(label=stat(count)))
 
+describe(FlanaganFinalData)
 
+```
+
+```{r}
+#subset
+all_items <- as_tibble(na.omit((select(FlanaganFinalData,c(7:60)))))
+QI2_items <- as_tibble(select(all_items,c(5:12)))
+trns_items <- as_tibble(select(all_items,c(1:4,13:54)))
+trns_items2 <-as_tibble(select(all_items,c(1:4,13:54)))
+
+itemkey = data.table(
+  SQIs = c("Career Exploration Planning and Preparation 1.1",
+           "Postsecondary and College Planning 1.2",
+           "Independent/Community Living 1.3",
+           "Significant Role of School Personnel 1.4",
+           "Self-Awareness 2.1",
+           "Disability Awareness 2.2",
+           "Independent Living Skill Development 2.3",
+           "Self-Determination Skill Development 2.4",
+           "Self-Management Skill Development 2.5",
+           "Leadership Skill Development 2.6",
+           "Youth Engagement in Transition 2.7",
+           "Significant Role of Adult 2.8",
+           "Authentic Person and Family Centered Planning Practices 3.1",
+           "Person and Family Centered Program Design 3.2",
+           "Family Engagement in Transition Planning 4.1",
+           "Family Information Sharing Activities 4.2",
+           "Peer to Peer Family Support 4.3",
+           "Family Respite 4.4",
+           "Friendship 5.1",
+           "Sense of Belonging 5.2",
+           "Social Skills Development 5.3",
+           "Anti-Bullying Efforts 5.4",
+           "Independent Living Skills Development 6.1",
+           "Planning for Future Living Arrangements 6.2",
+           "Travel and Transportation Skills 6.3",
+           "Recreation and Leisure 6.4",
+           "Community Based Experiences 6.5",
+           "Faith Based Experiences 6.6",
+           "Civic Engagement 6.7",
+           "Mental Health Supports 6.8",
+           "Agencies in Schools 7.1",
+           "Transition Coordinating Councils 7.2",
+           "Community Agency Nights about Employment 7.3",
+           "Transition Staffings 7.4",
+           "Employment Expos 7.5",
+           "Transition Fairs 7.6",
+           "Transition Conferences 7.7",
+           "Career Development Classes 8.1",
+           "Career Clubs 8.2",
+           "Career and Technical Education 8.3",
+           "Career Exploration 8.4",
+           "Discovery Process 8.5",
+           "Unpaid Work Experience 8.6",
+           "Paid Work Experience 8.7",
+           "OVR Services 8.8",
+           "Job Coaching Services 8.9",
+           "Summer Employment 8.10",
+           "On-the-Job Training 8.11",
+           "Employer Partnerships 8.12",
+           "University Partnerships 8.13",
+           "Pre-College Experience Programs 9.1",
+           "College-Based Transition Programs 9.2",
+           "Postsecondary Education Programs 9.3",
+           "Postsecondary Career Training Programs 9.4"
+           ),
+  Subindicators = c(paste("SQI",1:54))
+)
 
 ```
 
@@ -416,24 +484,7 @@ Age <- ggplot(data=subset(FlanaganFinalData,!is.na(Age)),aes(x=Age)) +
 library(psych)
 library(corrplot)
 library(polycor) #masks polyserial from pysch package
-library(FactoMineR)
-library(infotheo)
 
-#subset
-all_items <- as_tibble(na.omit((select(FlanaganFinalData,c(7:60)))))
-QI2_items <- as_tibble(select(all_items,c(5:12)))
-trns_items <- as_tibble(select(all_items,c(1:4,13:54)))
-
-#create total trns score (which is target variable for PCA)
-trns_items$trnsqual <- as.numeric(rowSums(trns_items[,c(1:46)]))
-
-#equal width discretize trnsqual vector to 3 bins representing the ordinal scale of the 46 features
-trnsqual_dis <- discretize(trns_items$trnsqual,disc="equalwidth",nbins=3)
-trns_items$trnsqual <- trnsqual_dis$X
-
-```
-
-```{r}
 #Create and plot a correlation matrix of the SQIs
 #all items
 all_items_correlations <- polychoric(all_items,smooth=TRUE,global=TRUE,weight=NULL,progress=TRUE,na.rm=TRUE, delete=TRUE)
@@ -449,51 +500,56 @@ trns_items_corrplot <- corrplot(trns_items_correlations$rho,type = "lower",metho
 ```
 
 ```{r}
+library(dplyr)
+library(data.table)
+library(ggplot2)
+library(FactoMineR)
+library(infotheo)
+
 #Feature extraction for "transition planning (trns)" through PCA
 
 #Check factorability of the data
-trns_KMO <- KMO(trns_items)
-trns_anticorr <- corrplot(KMO_trns$ImCov,type= "lower",method = "number")
-trns_Bart <- cortest.bartlett(trns_items_correlations$rho,n=618)
+KMO <- KMO(trns_items_correlations$rho)
+anticorr <- corrplot(KMO$ImCov,type= "lower",method = "number")
+Bart <- cortest.bartlett(all_items_correlations$rho,n=624)
 
-#make the target null so that PCA can tell identify the discrete levels
-trns_items2 <- copy(trns_items) #keep one without null for later
-trns_items <- trns_items[, "trnsqual":= NULL]
+#create total trns score (which is target variable for PCA)
+trns_items2$trnsqual <- as.numeric(rowSums(trns_items[,c(1:45)]))
+
+#equal width discretize trnsqual vector to 3 bins representing the ordinal scale of the 46 features
+#trnsqual_dis <- discretize(trns_items2$trnsqual,disc="equalwidth",nbins=3)
+#trns_items2$trnsqual <- trnsqual_dis$X
+
+#make the target variable null in the forthcoming analyses
+#trns_items2 < trns_items2[,trnsqual := NULL]
 
 #run PCA
-trns_pca <- prcomp(trns_items,scale. = FALSE)
+trns_pca <- prcomp(trns_items2,scale. = FALSE)
 
 #get eigen values from the PCA 
 trns_pca$eigenvalues <- trns_pca$sdev^2
 
-#plot components with eigenvalue over 1 to see how they divide the data into clusters depending upon the discrete levels of trnsqual
-trns_pca_maxpcs2 <- data.frame(trns_pca$x[, 1:2])
-trns_pca_maxpcs3 <- data.frame(trns_pca$x[, 1:3])
+#Calculate the percentage of variation within each principal component and plot the results
+trns_pca_var <- trns_pca$sdev^2 
+trns_pca_var_perc <- round(
+  trns_pca_var/sum(trns_pca_var)*100
+  ,1)
 
-trns2d <- plot(trns_pca$x[,1], 
-     trns_pca$x[,2])
+barplot(trns_pca_var_perc,
+        main= "PC Variation Plot",
+        xlab="Principal Components",
+        ylab="Percentage of Variance", 
+        ylim = c(0,100)
+        )
 
-trns3d <- scatterplot3d::scatterplot3d((trns_pca$x[,1:3]))
+#Rotation - assign weights to features in each PCA (loadings), with an array of loadings for each PC being an Eigenvector. Goal is to identify which features are most important in differentiating between the quality of transition planning experiences
 
-#Calculate the percentage of variation within each principal component
-trns_pca_var <- trns_pca$sdev^2 #get variance
-trns_pca_var_perc <- round(trns_pca_var/sum(trns_pca_var)*100,1) # each PC variance 
-
-#plot the PC variance
-barplot(trns_pca_var_perc,main= "PC Variation Plot", xlab="Principal Components", ylab="Percentage of Variance",ylim = c(0,100))
-
-#assign weights to features in each PCA (loadings), with an array of loadings for each PC being an Eigenvector
 PC1 <- trns_pca$rotation[,1]
 PC1_scores <- abs(PC1)
 PC1_scores_ordered <- sort(PC1_scores,decreasing = TRUE)
 names(PC1_scores_ordered)
-
-#differentiate between levels of target variable using most important features
-ggplot(trns_items_orginal,
-       aes(x=SQI34,
-           y=SQI36, 
-           color = trnsqual)) +
-         geom_point()
+print(PC1_scores_ordered) #names and scores 
+trns_pca_loadings <- as_tibble(print(trns_pca$rotation[,1:6]))
          
   
 ```
