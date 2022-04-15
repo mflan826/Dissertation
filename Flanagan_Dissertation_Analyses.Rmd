@@ -550,7 +550,11 @@ PC1_scores_ordered <- sort(PC1_scores,decreasing = TRUE)
 names(PC1_scores_ordered)
 print(PC1_scores_ordered) #names and scores 
 trns_pca_loadings <- as_tibble(print(trns_pca$rotation[,1:6]))
-         
+
+write.csv(trns_pca_loadings,"C:\\Users\\snowb\\Box\\Matt Flanagan's Box Drive\\GW UNIVERSITY, GSEHD\\Dissertation\\Writing\\pcaloadings.csv")
   
+#comms
+extracted <- sum(trns_pca$eigenvalues)
+
 ```
 
