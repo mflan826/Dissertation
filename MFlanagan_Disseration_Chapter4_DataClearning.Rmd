@@ -1124,12 +1124,22 @@ joined <- joined %>% mutate_at(vars(61:64,71:78,85,86,93:96,103:106,113:120,127:
               "Don't Know / Doesn't Relate to Me" = 1,
             )))
 
-joined <- joined %>% mutate_at(vars(61:64,71:78,85,86,93:96,103:106,113:120,127:133,140:152,159:162), #re-code stk ratings - access
+joined <- joined %>% mutate_at(vars(65:67,79:81,87:89,97:99,107:109,121:123,134:136,153:155,163:165), #re-code stk ratings - adapt
             ~as.numeric(recode(.x,
-              "Full Implementation"=4,
-              "Some"=3,
-              "Not at all"=2,
-              "Don't Know / Doesn't Relate to Me" = 1,
+              "Full Implementation (4)"=4,
+              "Partial Implementation (3)"=3,
+              "Limited Implementation (2)"=2,
+              "No Implementation (1)" = 1,
+              "Not Applicable" = 0
+            )))
+
+joined <- joined %>% mutate_at(vars(68:70,82:84,90:92,100:102,110:112,124:126,137:139,156:158,166:168), #re-code stk ratings - access
+            ~as.numeric(recode(.x,
+              "Full Access (4)"=4,
+              "Partial Partial (3)"=3,
+              "Limited Access (2)"=2,
+              "No Access (1)" = 1,
+              "Not Applicable" = 0
             )))
 
 joined <- joined %>% mutate_at(vars(172:221), #re-code fam ratings
