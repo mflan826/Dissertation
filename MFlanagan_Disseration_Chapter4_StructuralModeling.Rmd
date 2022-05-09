@@ -165,6 +165,10 @@ threedomainploy <- polychoric(SQIthreedomain,smooth=TRUE,global = TRUE,na.rm = T
 print(threedomainploy$rho)
 corrplot(threedomainploy$rho,type="lower",method="number")
 
+# three domains w/ CFIRs
+
+
 KMO(threedomainploy$rho)
+cortest.bartlett(threedomainploy$rho,n=1997)
 
 ```
