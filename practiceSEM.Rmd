@@ -1,0 +1,14 @@
+---
+title: "Practicing SEM"
+output: html_notebook
+---
+
+```{r}
+
+dat <- read.csv("https://stats.idre.ucla.edu/wp-content/uploads/2021/02/worland5.csv")
+
+cov(dat)
+
+
+```
+
