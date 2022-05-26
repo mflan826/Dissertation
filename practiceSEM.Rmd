@@ -1,14 +1,83 @@
 ---
-title: "Practicing SEM"
+title: "Practice SEM"
 output: html_notebook
 ---
 
+
 ```{r}
+
+library(lavaan)
 
 dat <- read.csv("https://stats.idre.ucla.edu/wp-content/uploads/2021/02/worland5.csv")
 
+# Lavaan Syntax:
+# ~ predict, used for regression of observed outcome to observed predictors (e.g., y ~ x)
+# =~ indicator, used for latent variable to observed indicator in factor analysis measurement models (e.g., f =~ q + r + s)
+# ~~ covariance (e.g., x ~~ x)
+# ~1 intercept or mean (e.g., x ~ 1 estimates the mean of variable x)
+# 1* fixes parameter or loading to one (e.g., f =~ 1*q)
+# NA* frees parameter or loading (useful to override default marker method, (e.g., f =~ NA*q)
+# a* labels the parameter ‘a’, used for model constraints (e.g., f =~ a*q)
+# . in front of parameter denotes an endogenous variable
+
+# Covariance / Variance Matrix ----
+# With SEM, the goal is to replicate the variance-covariance matrix with specified model parameters
 cov(dat)
 
+
+#SLR using lm() from base R ------
+m1a <- lm(read ~ motiv, data=dat)
+fit1a <- summary(m1a)
+print(fit1a)
+
+
+# SLR using lavaan ------
+
+m1b <- '
+  read ~ 1 + motiv
+  motiv ~~ motiv
+' 
+fit1b <- sem(m1b,data=dat)
+summary(fit1b)
+
+# Interpretation: y = read, x = motiv, regression coefficient / gamma = .530, intercept (a, alpha) = 0, residual variance of endogenous variable = 71.766. 
+
+m1b <- '
+  read ~ motiv
+  motiv ~~ motiv
+' 
+fit1b <- sem(m1b,data=dat)
+summary(fit1b)
+
+# the df's don't change because linear regression models are always saturated. A Saturated Model is where the number of parameters/coefficients is equal to the number of data points. This is like a ‘connect the dots’ model where the line or curve passes through each point. This is considered to be the perfect model as it takes into account all the variance in the data and has the maximum achievable likelihood.
+
+# ML versus least squares ----
+# The fixed effects of an ordinary least squares regression is equivalent to maximum likelihood but the residual variance differs between the two.
+
+# Multiple Regression ----
+# In matrix notation:
+# y1 = alpha1 + vector of exogenous variables * vector of regression coefficients for total number of exo var + residual of endogenous variable
+# assumption that mean of residuals is zero and the residuals of endogenous variable y are uncorrelated with exogenous variables in vector
+
+m2 <- '
+  read ~ 1 + ppsych + motiv
+  ppsych ~~ motiv
+'
+fit2 <- sem(m2,data=dat)
+summary(fit2)
+
+# intepreting output:
+# For a one unit increase in negative parent psych, reading score decreases by .275 points. For a one unit increase in motivation, reading score increases by .461 points. Parent psych and motiv have a negative covariance, meaning as one increases, the other decreases and vice versa. Residual variance for read, which is the sum of squared differences between predicted and observed data is 64.708
+
+
+# Multivariate Regression ----
+
+m3a <- 
+  ' read ~ 1 + ppsych + motiv
+  arith ~ 1 + motiv
+  '
+fit3a <- sem(m3a,data=dat)
+summary(fit3a)
 
 ```
 
