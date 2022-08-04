@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Matthew Flanagan's Dissertation: SEM"
 output: html_notebook
 editor_options: 
   chunk_output_type: console
